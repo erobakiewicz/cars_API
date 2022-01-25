@@ -13,7 +13,7 @@ class CarSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         connector = VehicleAPICConnector(validated_data)
-        new_car = connector.get_vehicle_data()
+        new_car = connector.formatted_vehicle_data()
         obj = Car.objects.create(
             model=new_car.get("Model_Name"),
             make=new_car.get("Make_Name")
