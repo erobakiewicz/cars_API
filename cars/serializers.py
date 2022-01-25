@@ -25,4 +25,12 @@ class CarSerializer(serializers.ModelSerializer):
 class CarRatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarRating
-        fields = ['rating', 'rated_car']
+        fields = ['rating', 'car_id']
+
+
+class CarPopularitySerializer(serializers.ModelSerializer):
+    rates_number = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Car
+        fields = ['id', 'make', 'model', 'rates_number']

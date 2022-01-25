@@ -14,9 +14,13 @@ class Car(models.Model):
     @property
     @admin.display(description="average rating")
     def avg_rating(self):
-        if car_rating := CarRating.objects.filter(rated_car=self).aggregate(Avg('rating'))['rating__avg']:
+        if car_rating := CarRating.objects.filter(car_id=self).aggregate(Avg('rating'))['rating__avg']:
             return car_rating
         return 0
+
+    @property
+    def rates_number(self):
+        return CarRating.objects.filter(car_id=self).count()
 
     class Meta:
         verbose_name = "Car"
@@ -24,11 +28,11 @@ class Car(models.Model):
 
 
 class CarRating(models.Model):
+    car_id = models.ForeignKey('Car', on_delete=models.CASCADE, verbose_name="rated car id", related_name="ratings")
     rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
-    rated_car = models.ForeignKey('Car', on_delete=models.CASCADE, verbose_name="rated car", related_name="ratings")
 
     def __str__(self):
-        return f'{self.rated_car.model}: {self.rating}'
+        return f'{self.car_id.model}: {self.rating}'
 
     class Meta:
         verbose_name = "Car rating"
