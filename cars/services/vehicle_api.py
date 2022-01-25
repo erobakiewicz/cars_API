@@ -18,9 +18,10 @@ class VehicleAPICConnector:
         response = requests.get(
             url=f'{BASE_URL}vehicles/getmodelsformake/{self.make}?format=json',
         )
+        if response.status_code != 200:
+            raise VehicleAPICConnectorError("This car make doesn't exist")
         result_list = response.json().get('Results')
-        result = [result for result in result_list if result['Model_Name'] == self.model][0]
-        if result:
-            return result
+        if result := [result for result in result_list if result['Model_Name'] == self.model]:
+            return result[0]
         else:
-            raise VehicleAPICConnectorError("This Car doesn't exist")
+            raise VehicleAPICConnectorError("This car model doesn't exist")

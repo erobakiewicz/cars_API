@@ -14,7 +14,9 @@ class Car(models.Model):
     @property
     @admin.display(description="average rating")
     def avg_rating(self):
-        return Car.objects.aggregate(Avg('ratings__rating'))
+        if car_rating := CarRating.objects.filter(rated_car=self).aggregate(Avg('rating'))['rating__avg']:
+            return car_rating
+        return 0
 
     class Meta:
         verbose_name = "Car"
