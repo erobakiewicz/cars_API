@@ -15,8 +15,7 @@ class CarsTestCase(APITestCase):
         super().setUpClass()
         cls.client = APIClient()
         cls.car = Car.objects.create(make="Fiat", model="500")
-        cls.get_vehicle_data_return_value = {'Count': 10, 'Message': 'Response returned successfully',
-                                             'SearchCriteria': 'Make:Fiat', 'Results': [
+        cls.get_vehicle_data_return_value = {'Results': [
                 {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 2055, 'Model_Name': '500'},
                 {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 3490, 'Model_Name': 'Freemont'},
                 {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 25128, 'Model_Name': 'Ducato'}]}
