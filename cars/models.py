@@ -6,7 +6,7 @@ from django.contrib import admin
 
 class Car(models.Model):
     make = models.CharField("make", max_length=100)
-    model = models.CharField("model", max_length=100)
+    model = models.CharField("model", max_length=100, unique=True)
 
     def __str__(self):
         return f'{self.make}: {self.model}'

@@ -10,12 +10,17 @@ class VehicleAPICConnectorError(APIException):
 
 class VehicleAPICConnector:
 
-    def __init__(self, make, model):
-        self.make = make
-        self.model = model
+    def __init__(self, car_data):
+        self.make = car_data.get("make")
+        self.model = car_data.get('model')
 
     def get_vehicle_data(self):
         response = requests.get(
-            url=f'{BASE_URL}vehicles/getmodelsformake/{self.make}?format=json'
+            url=f'{BASE_URL}vehicles/getmodelsformake/{self.make}?format=json',
         )
-        print(response)
+        result_list = response.json().get('Results')
+        result = [result for result in result_list if result['Model_Name'] == self.model][0]
+        if result:
+            return result
+        else:
+            raise VehicleAPICConnectorError("This Car doesn't exist")
