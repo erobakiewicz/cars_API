@@ -7,10 +7,11 @@ name = "pypi"
 django = "*"
 djangorestframework = "*"
 django-environ = "*"
-psycopg2-binary = "*"
+psycopg2-binary ="==2.8.6"
 requests = "*"
+gunicorn = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.8"

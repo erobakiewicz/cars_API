@@ -71,7 +71,7 @@ WSGI_APPLICATION = 'cars_API.wsgi.application'
 
 
 DATABASES = {
-    'default': env.db(),
+    'default': env.db('DATABASE_URL'),
 }
 
 
