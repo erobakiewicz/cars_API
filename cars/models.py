@@ -15,7 +15,7 @@ class Car(models.Model):
     @admin.display(description="average rating")
     def avg_rating(self):
         if car_rating := CarRating.objects.filter(car_id=self).aggregate(Avg('rating'))['rating__avg']:
-            return car_rating
+            return round(car_rating, 1)
         return 0
 
     @property

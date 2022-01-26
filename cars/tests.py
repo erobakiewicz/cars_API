@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from cars.models import Car, CarRating
+from cars.services.vehicle_api import NO_MAKE_ERROR_MSG, NO_MODEL_ERROR_MSG
 
 
 class CarsTestCase(APITestCase):
@@ -16,9 +17,9 @@ class CarsTestCase(APITestCase):
         cls.client = APIClient()
         cls.car = Car.objects.create(make="Fiat", model="500")
         cls.get_vehicle_data_return_value = {'Results': [
-                {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 2055, 'Model_Name': '500'},
-                {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 3490, 'Model_Name': 'Freemont'},
-                {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 25128, 'Model_Name': 'Ducato'}]}
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 2055, 'Model_Name': '500'},
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 3490, 'Model_Name': 'Freemont'},
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 25128, 'Model_Name': 'Ducato'}]}
 
     def test_carviewset_list(self):
         response = self.client.get(reverse("cars:cars-list"))
@@ -46,7 +47,7 @@ class CarsTestCase(APITestCase):
 
     @patch('cars.services.vehicle_api.VehicleAPICConnector.get_vehicle_data')
     def test_alertviews_cannot_create_car_for_non_existing_make(self, mock_vehicle_api):
-        mock_vehicle_api.return_value = self.get_vehicle_data_return_value
+        mock_vehicle_api.return_value = {'Results': []}
         response = self.client.post(
             reverse("cars:cars-list"),
             data={
@@ -55,6 +56,7 @@ class CarsTestCase(APITestCase):
             }
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()['detail'], NO_MAKE_ERROR_MSG)
 
     @patch('cars.services.vehicle_api.VehicleAPICConnector.get_vehicle_data')
     def test_alertviews_cannot_create_car_for_non_existing_model(self, mock_vehicle_api):
@@ -67,6 +69,7 @@ class CarsTestCase(APITestCase):
             }
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()['detail'], NO_MODEL_ERROR_MSG)
 
 
 class CarRatingTestCase(APITestCase):

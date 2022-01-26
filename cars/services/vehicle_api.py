@@ -3,6 +3,8 @@ from rest_framework.exceptions import APIException
 import requests
 
 BASE_URL = 'https://vpic.nhtsa.dot.gov/api/'
+NO_MAKE_ERROR_MSG = "This car make doesn't exist"
+NO_MODEL_ERROR_MSG = "This car model doesn't exist"
 
 
 class VehicleAPICConnectorError(APIException):
@@ -23,9 +25,9 @@ class VehicleAPICConnector:
 
     def formatted_vehicle_data(self):
         if not self.get_vehicle_data().get('Results'):
-            raise VehicleAPICConnectorError("This car make doesn't exist")
+            raise VehicleAPICConnectorError(NO_MAKE_ERROR_MSG)
         result_list = self.get_vehicle_data().get('Results')
         if result := [result for result in result_list if result['Model_Name'] == self.model]:
             return result[0]
         else:
-            raise VehicleAPICConnectorError("This car model doesn't exist")
+            raise VehicleAPICConnectorError(NO_MODEL_ERROR_MSG)
