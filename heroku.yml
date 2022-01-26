@@ -2,4 +2,4 @@ build:
   docker:
     web: Dockerfile
 run:
-  web: gunicorn config.wsgi
+  web: gunicorn cars_API.wsgi
