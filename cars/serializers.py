@@ -13,7 +13,9 @@ class CarSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """
-        TODO KOMĆ
+        Serializer method takes request params "make" and "model" and pass them to VehicleAPIConnector.
+        VehicleAPI connector make request to external API with those params and checks if object matching criteria
+        exists. If so Car object is created if not returns response with error message.
         """
         connector = VehicleAPICConnector(validated_data)
         new_car = connector.formatted_vehicle_data()

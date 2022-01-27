@@ -21,7 +21,8 @@ class VehicleAPICConnector:
 
     def get_vehicle_data(self):
         """
-        TODO COMĆ
+        Method performs request to external API to check if requested car make exists.
+        Returns json response with list of models or empty list if there is no such car make.
         """
         try:
             response = requests.get(
@@ -33,7 +34,10 @@ class VehicleAPICConnector:
 
     def formatted_vehicle_data(self):
         """
-        #TODO COMĆ
+        Takes response from get_vehicle_data() method and checks if list of models is not empty.
+        If list is empty returns response ValidationError - no such car make.
+        If list is not empty checks if car model passed in car_data variable is present in the list of models.
+        If it's present it returns dict which contain car data, else returns response ValidationError - no such model.
         """
         if not self.get_vehicle_data().get('Results'):
             raise ValidationError(NO_MAKE_ERROR_MSG)
