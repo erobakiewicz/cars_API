@@ -1,5 +1,7 @@
+import socket
+
 from rest_framework import status
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
 import requests
 
 BASE_URL = 'https://vpic.nhtsa.dot.gov/api/'
@@ -7,8 +9,8 @@ NO_MAKE_ERROR_MSG = "This car make doesn't exist"
 NO_MODEL_ERROR_MSG = "This car model doesn't exist"
 
 
-class VehicleAPICConnectorError(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
+class VehicleAPICConnectionError(APIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 class VehicleAPICConnector:
@@ -18,16 +20,25 @@ class VehicleAPICConnector:
         self.model = car_data.get('model')
 
     def get_vehicle_data(self):
-        response = requests.get(
-            url=f'{BASE_URL}vehicles/getmodelsformake/{self.make}?format=json',
-        )
+        """
+        TODO COMĆ
+        """
+        try:
+            response = requests.get(
+                url=f'{BASE_URL}vehicles/getmodelsformake/{self.make}?format=json',
+            )
+        except socket.error as e:
+            raise VehicleAPICConnectionError(e)
         return response.json()
 
     def formatted_vehicle_data(self):
+        """
+        #TODO COMĆ
+        """
         if not self.get_vehicle_data().get('Results'):
-            raise VehicleAPICConnectorError(NO_MAKE_ERROR_MSG)
+            raise ValidationError(NO_MAKE_ERROR_MSG)
         result_list = self.get_vehicle_data().get('Results')
         if result := [result for result in result_list if result['Model_Name'] == self.model]:
             return result[0]
         else:
-            raise VehicleAPICConnectorError(NO_MODEL_ERROR_MSG)
+            raise ValidationError(NO_MODEL_ERROR_MSG)

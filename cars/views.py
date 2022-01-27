@@ -20,8 +20,4 @@ class PopularCarListAPIView(ListAPIView):
     serializer_class = CarPopularitySerializer
 
     def get_queryset(self):
-        return Car.objects.all().annotate(rating_count=Count('ratings')).order_by('-rating_count')
-
-
-
-
+        return Car.objects.all().annotate(rating_count=Count('ratings')).order_by('-rating_count')  # TODO add as manager method

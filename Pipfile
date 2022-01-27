@@ -10,6 +10,8 @@ django-environ = "*"
 psycopg2-binary ="==2.8.6"
 requests = "*"
 gunicorn = "*"
+flake8 = "*"
+factory-boy = "*"
 
 [dev-packages]
 

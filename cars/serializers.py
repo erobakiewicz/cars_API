@@ -12,6 +12,9 @@ class CarSerializer(serializers.ModelSerializer):
         fields = ['id', 'make', 'model', 'avg_rating']
 
     def create(self, validated_data):
+        """
+        TODO KOMĆ
+        """
         connector = VehicleAPICConnector(validated_data)
         new_car = connector.formatted_vehicle_data()
         obj = Car.objects.create(

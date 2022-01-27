@@ -1,11 +1,7 @@
-from pathlib import Path
-import environ
 import os
+import environ
 
-env = environ.Env(
-    # set casting, default value
-    DEBUG=(bool, False)
-)
+env = environ.Env()
 
 # Set the project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,15 +9,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Take environment variables from .env file
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# False if not in os.environ because of casting above
-DEBUG = env('DEBUG')
-
+DEBUG = env.bool('DEBUG', False)
 
 SECRET_KEY = env('SECRET_KEY')
 
-
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -53,8 +45,7 @@ ROOT_URLCONF = 'cars_API.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR + '/templates']
-        ,
+        'DIRS': [BASE_DIR + '/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,11 +60,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'cars_API.wsgi.application'
 
-
 DATABASES = {
     'default': env.db('DATABASE_URL'),
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -93,7 +82,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -105,7 +93,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
@@ -115,7 +102,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
