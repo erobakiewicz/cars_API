@@ -61,7 +61,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'cars_API.wsgi.application'
 
 DATABASES = {
-    'default': env.db('DATABASE_URL'),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': "db",
+        'PORT': '5432',
+    }
 }
 
 # Password validation
@@ -96,7 +103,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
+
+STATICFILES_DIRS = (os.path.join(STATIC_ROOT, 'css/'),
+                    os.path.join(STATIC_ROOT, 'javascript/'),
+                    os.path.join(STATIC_ROOT, 'images/')
+                    )
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -108,3 +122,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
 }
+
+CELERY_BROKER_URL = "redis://redis:6379"
+CELERY_RESULT_BACKEND = "redis://redis:6379"

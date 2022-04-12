@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+redis = "*"
 django = "==3.2"
 djangorestframework = "*"
 django-environ = "*"
@@ -12,6 +13,7 @@ requests = "*"
 gunicorn = "*"
 flake8 = "*"
 factory-boy = "*"
+celery = "*"
 
 [dev-packages]
 
