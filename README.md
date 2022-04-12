@@ -14,6 +14,8 @@ number of ratings).
 - Django / Django REST Framework
 - Docker
 - PostgreSQL
+- Redis
+- Celery
 
 ### Setup
 
@@ -21,3 +23,7 @@ number of ratings).
     - `SECRET_KEY` - django secret key
     - `DATABASE_URL` - postgres database url
 2. Run in root directory `docker-compose up`
+
+### Heroku
+
+App is not ready to deploy with redis and celery on Heroku.
