@@ -3,10 +3,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
 
-from cars.factories import CarFactory, CarRatingFactory
-from cars.models import Car
 from cars.services.vehicle_api import NO_MAKE_ERROR_MSG, NO_MODEL_ERROR_MSG
 
 pytestmark = pytest.mark.django_db
