@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from cars.factories import CarFactory, CarRatingFactory
+from cars.models import Car
 from cars.services.vehicle_api import NO_MAKE_ERROR_MSG, NO_MODEL_ERROR_MSG
 
 pytestmark = pytest.mark.django_db
@@ -129,23 +130,7 @@ def test_create_car_rating(client, car):
 
 # test for popular list
 
-
-class PopularCarListTestCase(APITestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.car1 = CarFactory(make="Fiat", model="500")
-        cls.car2 = CarFactory(make="Opel", model="Astra")
-        cls.car1_rate1 = CarRatingFactory(car_id=cls.car1, rating=5)
-        cls.car1_rate2 = CarRatingFactory(car_id=cls.car1, rating=5)
-        cls.car2_rate1 = CarRatingFactory(car_id=cls.car2, rating=5)
-        cls.car2_rate2 = CarRatingFactory(car_id=cls.car2, rating=5)
-        cls.car2_rate3 = CarRatingFactory(car_id=cls.car2, rating=5)
-
-    def test_get_most_popular_car_first_in_response_data_list_of_objects(self):
-        response = self.client.get(reverse('cars:popular'))
-        self.assertEqual(response.json()[0].get('rates_number'), 3)
-        self.assertEqual(response.json()[1].get('rates_number'), 2)
-        self.assertEqual(response.json()[0].get('id'), self.car2.id)
-        self.assertEqual(response.json()[1].get('id'), self.car1.id)
+def test_popular_car_list_returns_empty_list(client):
+    response = client.get(reverse("cars:popular"))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == []
