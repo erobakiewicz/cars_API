@@ -1,16 +1,12 @@
 import json
 from unittest.mock import patch, MagicMock
-
-from django.core.exceptions import ObjectDoesNotExist
+import pytest
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from cars.factories import CarFactory, CarRatingFactory
-from cars.models import Car
 from cars.services.vehicle_api import NO_MAKE_ERROR_MSG, NO_MODEL_ERROR_MSG
-
-import pytest
 
 pytestmark = pytest.mark.django_db
 
@@ -21,6 +17,43 @@ def test_cars_should_return_empty_list(client):
     response = client.get(reverse("cars:cars-list"))
     assert response.status_code == status.HTTP_200_OK
     assert json.loads(response.content) == []
+
+
+@patch(
+    'cars.services.vehicle_api.VehicleAPICConnector.get_vehicle_data',
+    MagicMock(return_value={'Results': []})
+)
+def test_cannot_create_car_from_non_existing_make_raises_non_exsisting_make_error(client):
+    response = client.post(
+        reverse("cars:cars-list"),
+        data={
+            "make": "NOTING",
+            "model": "None"
+        }
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()[0] == NO_MAKE_ERROR_MSG
+
+
+@patch(
+    'cars.services.vehicle_api.VehicleAPICConnector.get_vehicle_data',
+    MagicMock(
+        return_value={'Results': [
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 2055, 'Model_Name': '500'},
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 3490, 'Model_Name': 'Freemont'},
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 25128, 'Model_Name': 'Ducato'}]}
+    )
+)
+def test_cannot_create_car_from_non_existing_model_raises_non_existing_model_error(client):
+    response = client.post(
+        reverse("cars:cars-list"),
+        data={
+            "make": "Fiat",
+            "model": "Non-exisiting"
+        }
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()[0] == NO_MODEL_ERROR_MSG
 
 
 @patch(
@@ -49,113 +82,52 @@ def test_get_details_of_a_car(client, car):
     assert response.json().get("make") == car.make
 
 
-class CarsTestCase(APITestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.car = CarFactory(make="Fiat", model="500")
-        cls.get_vehicle_data_return_value = {'Results': [
-            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 2055, 'Model_Name': '500'},
-            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 3490, 'Model_Name': 'Freemont'},
-            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 25128, 'Model_Name': 'Ducato'}]}
-
-    def test_carviewset_list(self):
-        response = self.client.get(reverse("cars:cars-list"))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()[0].get('id'), self.car.id)
-
-    def test_carviewset_detail(self):
-        response = self.client.get(reverse("cars:cars-detail", args={self.car.id}))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json().get('id'), self.car.id)
-
-    def test_carviewset_delete(self):
-        response = self.client.delete(reverse("cars:cars-detail", args={self.car.id}))
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        with self.assertRaises(ObjectDoesNotExist):
-            Car.objects.get(id=self.car.id)
-
-    @patch('cars.services.vehicle_api.VehicleAPICConnector.get_vehicle_data')
-    def test_carviewset_create_car(self, mock_vehicle_api):
-        mock_vehicle_api.return_value = self.get_vehicle_data_return_value
-        response = self.client.post(
-            reverse("cars:cars-list"),
-            data={
-                "make": "Fiat",
-                "model": "Freemont"
-            }
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(Car.objects.get(id=response.json().get('id')))
-
-    @patch('cars.services.vehicle_api.VehicleAPICConnector.get_vehicle_data')
-    def test_alertviews_cannot_create_car_for_non_existing_make(self, mock_vehicle_api):
-        mock_vehicle_api.return_value = {'Results': []}
-        response = self.client.post(
-            reverse("cars:cars-list"),
-            data={
-                "make": "Non-existo",
-                "model": "Nullus"
-            }
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json()[0], NO_MAKE_ERROR_MSG)
-
-    @patch('cars.services.vehicle_api.VehicleAPICConnector.get_vehicle_data')
-    def test_alertviews_cannot_create_car_for_non_existing_model(self, mock_vehicle_api):
-        mock_vehicle_api.return_value = self.get_vehicle_data_return_value
-        response = self.client.post(
-            reverse("cars:cars-list"),
-            data={
-                "make": "Fiat",
-                "model": "Nullus"
-            }
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json()[0], NO_MODEL_ERROR_MSG)
+def test_delete_car(client, car):
+    response = client.delete(reverse("cars:cars-detail", args={car.id}))
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    response = client.get(reverse("cars:cars-list"))
+    assert response.json() == []
 
 
-class CarRatingTestCase(APITestCase):
+# cars aoo rating tests
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.car = CarFactory(make="Fiat", model="500")
+def test_cannot_rate_non_existing_car(client, car):
+    car_id = car.id
+    car.delete()
+    response = client.post(
+        reverse("cars:rate"),
+        data={
+            "car_id": car_id,
+            "rating": 5
+        }
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_cannot_rate_non_existing_car(self):
-        test_car = CarFactory()
-        test_car_id = test_car.id
-        test_car.delete()
-        response = self.client.post(
-            reverse('cars:rate'),
-            data={
-                "car_id": test_car_id,
-                "rating": 4
-            }
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_rating(self):
-        response = self.client.post(
-            reverse('cars:rate'),
-            data={
-                "car_id": self.car.id,
-                "rating": 5
+def test_cannot_create_rating_out_of_range(client, car):
+    response = client.post(
+        reverse("cars:rate"),
+        data={
+            "car_id": car.id,
+            "rating": 32
+        }
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json().get("rating") == ['Ensure this value is less than or equal to 5.']
 
-            })
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_create_rating_out_of_range(self):
-        response = self.client.post(
-            reverse('cars:rate'),
-            data={
-                "car_id": self.car.id,
-                "rating": 7
+def test_create_car_rating(client, car):
+    response = client.post(
+        reverse("cars:rate"),
+        data={
+            "car_id": car.id,
+            "rating": 3
+        }
+    )
+    assert response.status_code == status.HTTP_201_CREATED
 
-            })
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+# test for popular list
 
 
 class PopularCarListTestCase(APITestCase):
