@@ -1,4 +1,5 @@
-from unittest.mock import patch
+import json
+from unittest.mock import patch, MagicMock
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
@@ -8,6 +9,44 @@ from rest_framework.test import APITestCase
 from cars.factories import CarFactory, CarRatingFactory
 from cars.models import Car
 from cars.services.vehicle_api import NO_MAKE_ERROR_MSG, NO_MODEL_ERROR_MSG
+
+import pytest
+
+pytestmark = pytest.mark.django_db
+
+
+# cars app general tests
+
+def test_cars_should_return_empty_list(client):
+    response = client.get(reverse("cars:cars-list"))
+    assert response.status_code == status.HTTP_200_OK
+    assert json.loads(response.content) == []
+
+
+@patch(
+    'cars.services.vehicle_api.VehicleAPICConnector.get_vehicle_data',
+    MagicMock(
+        return_value={'Results': [
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 2055, 'Model_Name': '500'},
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 3490, 'Model_Name': 'Freemont'},
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 25128, 'Model_Name': 'Ducato'}]}
+    )
+)
+def test_create_car(client):
+    response = client.post(
+        reverse("cars:cars-list"),
+        data={'make': 'fiat', 'model': 'freemont'}
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+
+    assert response.json().get("model") == "Freemont"
+    assert response.json().get("make") == "FIAT"
+
+
+def test_get_details_of_a_car(client, car):
+    response = client.get(reverse("cars:cars-detail", args={car.id}))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json().get("make") == car.make
 
 
 class CarsTestCase(APITestCase):

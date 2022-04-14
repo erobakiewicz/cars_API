@@ -16,6 +16,7 @@ factory-boy = "*"
 celery = "*"
 pytest = "*"
 pytest-sugar = "*"
+pytest-django = "*"
 
 [dev-packages]
 
