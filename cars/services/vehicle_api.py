@@ -32,16 +32,32 @@ class VehicleAPICConnector:
             raise VehicleAPICConnectionError(e)
         return response.json()
 
-    def formatted_vehicle_data(self):
+    def validate_vehicle_data(self, response):
+        if not response.get('Results'):
+            raise ValidationError(NO_MAKE_ERROR_MSG)
+        formatted_result = self.formatted_vehicle_data(response.get('Results'))
+        return formatted_result
+
+    def get_vehicle_models_by_make_data(self):
+        """
+        Method performs request to external API to get a list of models of given make.
+        Returns json response with a list of models of given make or empty list if there is no such car make.
+        """
+        try:
+            response = requests.get(
+                url=f'{BASE_URL}/vehicles/GetModelsForMake/{self.make}?format=json'
+            )
+        except socket.error as e:
+            raise VehicleAPICConnectionError(e)
+        return response.json()
+
+    def formatted_vehicle_data(self, result_list):
         """
         Takes response from get_vehicle_data() method and checks if list of models is not empty.
         If list is empty returns response ValidationError - no such car make.
         If list is not empty checks if car model passed in car_data variable is present in the list of models.
         If it's present it returns dict which contain car data, else returns response ValidationError - no such model.
         """
-        if not self.get_vehicle_data().get('Results'):
-            raise ValidationError(NO_MAKE_ERROR_MSG)
-        result_list = self.get_vehicle_data().get('Results')
         if result := [result for result in result_list if result['Model_Name'] == self.model]:
             formatted_result = result[0]
             if formatted_result.get("Make_ID"):

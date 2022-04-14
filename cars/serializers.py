@@ -18,7 +18,8 @@ class CarSerializer(serializers.ModelSerializer):
         exists. If so Car object is created if not returns response with error message.
         """
         connector = VehicleAPICConnector(validated_data)
-        new_car = connector.formatted_vehicle_data()
+        data = connector.get_vehicle_data()
+        new_car = connector.validate_vehicle_data(data)
         obj = Car.objects.create(**new_car)
         obj.save()
         return obj
