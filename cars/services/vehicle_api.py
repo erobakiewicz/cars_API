@@ -43,6 +43,13 @@ class VehicleAPICConnector:
             raise ValidationError(NO_MAKE_ERROR_MSG)
         result_list = self.get_vehicle_data().get('Results')
         if result := [result for result in result_list if result['Model_Name'] == self.model]:
-            return result[0]
+            formatted_result = result[0]
+            if formatted_result.get("Make_ID"):
+                formatted_result.pop("Make_ID")
+            if formatted_result.get("Model_ID"):
+                formatted_result.pop("Model_ID")
+            formatted_result["make"] = formatted_result.pop("Make_Name")
+            formatted_result["model"] = formatted_result.pop("Model_Name")
+            return formatted_result
         else:
             raise ValidationError(NO_MODEL_ERROR_MSG)

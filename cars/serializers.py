@@ -19,12 +19,15 @@ class CarSerializer(serializers.ModelSerializer):
         """
         connector = VehicleAPICConnector(validated_data)
         new_car = connector.formatted_vehicle_data()
-        obj = Car.objects.create(
-            model=new_car.get("Model_Name"),
-            make=new_car.get("Make_Name")
-        )
+        obj = Car.objects.create(**new_car)
         obj.save()
         return obj
+
+    def validate_make(self, value):
+        return value.capitalize()
+
+    def validate_model(self, value):
+        return value.capitalize()
 
 
 class CarRatingSerializer(serializers.ModelSerializer):
