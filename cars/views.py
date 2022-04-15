@@ -32,10 +32,26 @@ class PopularCarListAPIView(ListAPIView):
 
 
 class AllCarsByMakeAPIView(APIView):
+    """
+    Allows to see all car models by specifc make.
+    Optional if "create" param is passed it creates Car objects from first 10 endries in API response.
+    """
     def post(self, request):
         connector = VehicleAPICConnector(request.data)
         list_of_cars = connector.get_vehicle_models_by_make_data()
         serialized_list_of_cars = []
-        for car in list_of_cars:
-            serialized_list_of_cars.append(car)
+        serializer = CarSerializer(data=list_of_cars, many=True)
+        serializer.is_valid()
+        serialized_list_of_cars.append(serializer.data)
+        if request.data.get("create") == "True":
+            cars_to_create = list_of_cars[:10]
+            created_cars_ids = []
+            for car in cars_to_create:
+                created_car, created = Car.objects.get_or_create(**dict(car))
+                if created:
+                    car_id = created_car.id
+                    created_cars_ids.append(car_id)
+            serializer = CarSerializer(data=Car.objects.filter(id__in=created_cars_ids), many=True)
+            serializer.is_valid()
+            return Response(status=status.HTTP_201_CREATED, data=serializer.data)
         return Response(status=status.HTTP_200_OK, data=serialized_list_of_cars)
