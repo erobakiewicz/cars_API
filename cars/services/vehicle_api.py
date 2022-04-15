@@ -16,8 +16,8 @@ class VehicleAPICConnectionError(APIException):
 class VehicleAPICConnector:
 
     def __init__(self, car_data):
-        self.make = car_data.get("make")
-        self.model = car_data.get('model')
+        self.make = car_data.get("make", '')
+        self.model = car_data.get('model', '')
 
     def get_vehicle_data(self):
         """
@@ -38,6 +38,12 @@ class VehicleAPICConnector:
         formatted_result = self.formatted_vehicle_data(response.get('Results'))
         return formatted_result
 
+    def validate_vehicles_by_make_data(self, response):
+        if not response.get('Results'):
+            raise ValidationError(NO_MAKE_ERROR_MSG)
+        formatted_result = self.formatted_vehicles_data(response.get('Results'))
+        return formatted_result
+
     def get_vehicle_models_by_make_data(self):
         """
         Method performs request to external API to get a list of models of given make.
@@ -49,7 +55,7 @@ class VehicleAPICConnector:
             )
         except socket.error as e:
             raise VehicleAPICConnectionError(e)
-        return response.json()
+        return self.validate_vehicles_by_make_data(response.json())
 
     def formatted_vehicle_data(self, result_list):
         """
@@ -69,3 +75,13 @@ class VehicleAPICConnector:
             return formatted_result
         else:
             raise ValidationError(NO_MODEL_ERROR_MSG)
+
+    def formatted_vehicles_data(self, results_list):
+        for result in results_list:
+            if result.get("Make_ID"):
+                result.pop("Make_ID")
+            if result.get("Model_ID"):
+                result.pop("Model_ID")
+            result["make"] = result.pop("Make_Name")
+            result["model"] = result.pop("Model_Name")
+        return results_list
