@@ -3,13 +3,20 @@ from rest_framework import serializers
 from cars.models import Car, CarRating
 from cars.services.vehicle_api import VehicleAPICConnector
 
-
 class CarSerializer(serializers.ModelSerializer):
     avg_rating = serializers.ReadOnlyField()
 
     class Meta:
         model = Car
         fields = ['id', 'make', 'model', 'avg_rating']
+
+    def validate_make(self, value):
+        return value.capitalize()
+
+    def validate_model(self, value):
+        return value.capitalize()
+
+class CreateCarSerializer(CarSerializer):
 
     def create(self, validated_data):
         """
@@ -23,12 +30,6 @@ class CarSerializer(serializers.ModelSerializer):
         obj = Car.objects.create(**new_car)
         obj.save()
         return obj
-
-    def validate_make(self, value):
-        return value.capitalize()
-
-    def validate_model(self, value):
-        return value.capitalize()
 
 
 class CarRatingSerializer(serializers.ModelSerializer):
