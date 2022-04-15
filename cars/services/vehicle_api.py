@@ -55,7 +55,7 @@ class VehicleAPICConnector:
             )
         except socket.error as e:
             raise VehicleAPICConnectionError(e)
-        return self.validate_vehicles_by_make_data(response.json())
+        return response.json()
 
     def formatted_vehicle_data(self, result_list):
         """

@@ -131,3 +131,51 @@ def test_popular_car_list_returns_empty_list(client):
     response = client.get(reverse("cars:popular"))
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == []
+
+
+# tests for get car models by make
+@patch(
+    'cars.services.vehicle_api.VehicleAPICConnector.get_vehicle_models_by_make_data',
+    MagicMock(
+        return_value={'Results': [
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 2055, 'Model_Name': '500'},
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 3490, 'Model_Name': 'Freemont'},
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 25128, 'Model_Name': 'Ducato'}]}
+    )
+)
+def test_all_cars_by_make_returns_list_of_cars(client):
+    response = client.post(
+        reverse("cars:cars_by_make"),
+        data={
+            "make": "FIAT"
+        }
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [
+        {'make': 'Fiat', 'model': '500'}, {'make': 'Fiat', 'model': 'Freemont'}, {'make': 'Fiat', 'model': 'Ducato'}
+    ]
+
+
+@patch(
+    'cars.services.vehicle_api.VehicleAPICConnector.get_vehicle_models_by_make_data',
+    MagicMock(
+        return_value={'Results': [
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 2055, 'Model_Name': '500'},
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 3490, 'Model_Name': 'Freemont'},
+            {'Make_ID': 492, 'Make_Name': 'FIAT', 'Model_ID': 25128, 'Model_Name': 'Ducato'}]}
+    )
+)
+def test_all_cars_by_make_creates_three_objs_from_response(client):
+    response = client.post(
+        reverse("cars:cars_by_make"),
+        data={
+            "make": "FIAT",
+            "create": "True"
+        }
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json() == [
+        {'id': 2, 'make': 'Fiat', 'model': '500', 'avg_rating': 0, 'rates_number': 0},
+        {'id': 3, 'make': 'Fiat', 'model': 'Freemont', 'avg_rating': 0, 'rates_number': 0},
+        {'id': 4, 'make': 'Fiat', 'model': 'Ducato', 'avg_rating': 0, 'rates_number': 0}
+    ]
