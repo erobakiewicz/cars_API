@@ -2,11 +2,10 @@ from django.contrib import admin
 from cars.models import Car, CarRating
 from cars.serializers import CarSerializer
 from cars.services.vehicle_api import VehicleAPICConnector
-
+from django.contrib import messages
 
 @admin.action(description="Imports all car models by make of selected models")
 def get_all_cars_by_make(modeladmin, request, queryset):
-    messages = []
     car_makes = [{"make": make} for make in queryset.values_list("make", flat=True)]
     for make in car_makes:
         connector = VehicleAPICConnector(make)
@@ -18,9 +17,9 @@ def get_all_cars_by_make(modeladmin, request, queryset):
             if car_to_create.is_valid():
                 created_car, created = Car.objects.get_or_create(**car_to_create.validated_data)
                 if created:
-                    messages.append(f'Created {created_car.make} {created_car.model}')
-                messages.append(f'Car {created_car.make} {created_car.model} already exists')
-            messages.append(car_to_create.errors)
+                    messages.add_message(request, messages.SUCCESS, f'Created {created_car.make} {created_car.model}')
+                messages.add_message(request, messages.INFO, f'Car {created_car.make} {created_car.model} already exists')
+            messages.add_message(request, messages.ERROR, f'Car not created error: {car_to_create.errors}')
 
 
 @admin.register(Car)
