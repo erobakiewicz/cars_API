@@ -41,18 +41,20 @@ class AllCarsByMakeAPIView(APIView):
         connector = VehicleAPICConnector(request.data)
         list_of_cars = connector.get_vehicle_models_by_make_data()
         formatted_list_of_cars = connector.validate_vehicles_by_make_data(list_of_cars)
-        serializer = CarSerializer(data=formatted_list_of_cars, many=True)
-        serializer.is_valid()
+        length = 10 if len(formatted_list_of_cars) >= 10 else len(formatted_list_of_cars)
+        cars_to_create = formatted_list_of_cars[:length]
         if request.data.get("create") == "True":
-            lenght = 10 if len(serializer.data) >= 10 else len(serializer.data)
-            cars_to_create = serializer.data[:lenght]
             created_cars_ids = []
             for car in cars_to_create:
-                created_car, created = Car.objects.get_or_create(**car)
-                if created:
-                    car_id = created_car.id
-                    created_cars_ids.append(car_id)
+                car = CarSerializer(data=car)
+                if car.is_valid():
+                    created_car, created = Car.objects.get_or_create(**car.validated_data)
+                    if created:
+                        car_id = created_car.id
+                        created_cars_ids.append(car_id)
             serializer = CarSerializer(data=Car.objects.filter(id__in=created_cars_ids), many=True)
             serializer.is_valid()
             return Response(status=status.HTTP_201_CREATED, data=serializer.data)
+        serializer = CarSerializer(data=cars_to_create, many=True)
+        serializer.is_valid()
         return Response(status=status.HTTP_200_OK, data=serializer.data)

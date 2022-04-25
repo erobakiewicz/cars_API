@@ -13,10 +13,10 @@ class CarSerializer(serializers.ModelSerializer):
         fields = ['id', 'make', 'model', 'avg_rating', 'rates_number']
 
     def validate_make(self, value):
-        return value.capitalize()
+        return value.lower().capitalize()
 
     def validate_model(self, value):
-        return value.capitalize()
+        return value.lower().capitalize()
 
 
 class CreateCarSerializer(CarSerializer):
