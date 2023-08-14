@@ -27,5 +27,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Run Tests
+      env:
+        DJANGO_SETTINGS_MODULE: cars_API.settings
+        SECRET_KEY: 123qwe
       run: |
         python manage.py test
