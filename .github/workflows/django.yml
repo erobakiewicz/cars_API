@@ -30,3 +30,7 @@ jobs:
         SECRET_KEY: 123qwe
       run: |
         python manage.py test
+    - name: Run Lint
+      run: |
+          pip install flake8
+          flake8 --exclude=migrations --statistics
